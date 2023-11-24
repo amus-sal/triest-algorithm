@@ -1,7 +1,7 @@
 from time import sleep
 
 from graph2 import Vertex, Graph
-from triest_base import TriestBase
+from triest_baseex import TriestBase
 import networkx as nx
 
 def create_stream(graph):
