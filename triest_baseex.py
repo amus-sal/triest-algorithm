@@ -21,8 +21,10 @@ class TriestBase:
 
     def update_sample(self, edge):
         self.graph.addEdge(edge)
-        self.local_triangle_counters[edge[0]] = 0
-        self.local_triangle_counters[edge[1]] = 0
+        if not self.local_triangle_counters.get(edge[0]):
+            self.local_triangle_counters[edge[0]] = 0
+        if not self.local_triangle_counters.get(edge[1]):
+            self.local_triangle_counters[edge[1]] = 0
 
 
     def calculate_triangles(self, stream):
@@ -40,8 +42,9 @@ class TriestBase:
 
     def sample_edge(self, edge, timestamp) -> bool:
         current_prob = self.sample_size / timestamp
+        print("timestamp: ", timestamp)
         if timestamp <= self.sample_size:
-            return True
+             return True
         elif random.random() <= current_prob:
             edge_list = self.graph.getEdges()
             edge_to_remove = random.choice(edge_list)
@@ -53,12 +56,14 @@ class TriestBase:
 
     def update_counters(self, operation, edge):
         (u, v) = edge
+        print("edge: ", edge)
+        print("operation: ", operation)
         u_neighbors = self.graph.getNeighbors(u)
         v_neighbors = self.graph.getNeighbors(v)
         common_neighbors = u_neighbors & v_neighbors
-
+        print("Common neighbours: " ,common_neighbors)
         for c in common_neighbors:
-            # print("operation", operation)
+            print("operation on : ", c)
             if operation == "subtract":
                 self.global_triangles_counter -= 1
                 self.local_triangle_counters[c] -= 1
@@ -69,6 +74,11 @@ class TriestBase:
                 self.local_triangle_counters[c] += 1
                 self.local_triangle_counters[u] += 1
                 self.local_triangle_counters[v] += 1
+                
+            print(f"result on {c}: ", self.local_triangle_counters[c])
+            print(f"result on {u}: ", self.local_triangle_counters[u])
+            print(f"result on {v}: ", self.local_triangle_counters[v])
+
         return None
 
 

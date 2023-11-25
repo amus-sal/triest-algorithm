@@ -7,12 +7,11 @@ import networkx as nx
 def create_stream(graph):
     def stream():
         for edge in graph.edges:
-            sleep(0.5)
             yield edge
     return stream
 
 if __name__ == '__main__':
-    graph = nx.complete_graph(6)
+    graph = nx.complete_graph(10)
     graph = graph.to_undirected()
 
     triest = TriestBase(10)

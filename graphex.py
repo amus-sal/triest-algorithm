@@ -14,13 +14,12 @@ class Graph:
             self.adjacency_list[node] = set()
             
     def addEdge(self, edge):
+        if edge in self.edge_set:
+            return
         self.adjacency_list[edge[0]].add(edge[1])
         self.adjacency_list[edge[1]].add(edge[0])
         self.edge_set.add(edge)
-        if not self.adjacency_list[edge[0]]:
-            del self.adjacency_list[edge[0]]
-        if not self.adjacency_list[edge[1]]:
-            del self.adjacency_list[edge[1]]
+
 
     def removeEdge(self, edge):
         self.adjacency_list[edge[0]].remove(edge[1])
@@ -29,6 +28,6 @@ class Graph:
 
     def getEdges(self):
         return list(self.edge_set)
-
+    
     def getNeighbors(self, u):
         return self.adjacency_list.get(u)
