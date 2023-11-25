@@ -9,8 +9,21 @@ class TriestBase:
 
     def __str__(self):
         return f'Global_triangles_counter: {self.global_triangles_counter} \n Local triangles: {self.local_triangle_counters}'
+
+    def calculate_estimation(self):
+        x_nominator = self.timestamp * (self.timestamp-1)*(self.timestamp-2)
+        x_denominator = self.sample_size * ( self.sample_size-1 ) * (self.sample_size -2)
+
+        x_t = max(1, x_nominator /x_denominator)
+        triangles_per_node = {}
+        for k,v in self.local_triangle_counters.items():
+            triangles_per_node[k] = v * x_t
+
+        triangles_global = x_t * self.global_triangles_counter
+        return triangles_per_node, triangles_global
+
     def __init__(self, memory_size):
-        assert memory_size >= 6
+        assert memory_size > 6
         self.graph = Graph()
         self.sample_size = memory_size
         self.timestamp = 0
@@ -19,26 +32,27 @@ class TriestBase:
         self.local_triangle_counters = {}
         self.global_triangles_counter = 0
 
-    def update_sample(self, edge):
-        self.graph.addEdge(edge)
-        if not self.local_triangle_counters.get(edge[0]):
-            self.local_triangle_counters[edge[0]] = 0
-        if not self.local_triangle_counters.get(edge[1]):
-            self.local_triangle_counters[edge[1]] = 0
 
+    def update_graph(self, edge):
+        self.graph.addNode(edge[0])
+        self.graph.addNode(edge[1])
+        self.graph.addEdge(edge)
 
     def calculate_triangles(self, stream):
+        triangles_per_node, triangles_global = 0, {}
         for edge in stream():
-            print(edge)
-            if not self.graph.hasNode(edge[0]):
-                self.graph.addNode(edge[0])
-            if not self.graph.hasNode(edge[1]):
-                self.graph.addNode(edge[1])
-            self.graph.addEdge(edge)
+            print(f"edge on stream: {edge}")
             self.timestamp += 1
             if self.sample_edge(edge, self.timestamp):
-                self.update_sample(edge)
+                self.update_graph(edge)
                 self.update_counters("add", edge)
+            else:
+                print("skipping")
+            triangles_per_node, triangles_global = self.calculate_estimation()
+            print(f"timestamp: {self.timestamp}, triangles_per_node: {triangles_per_node}, triangles_global: {triangles_global}")
+            print("***************")
+        triangles_per_node, triangles_global = self.calculate_estimation()
+        return triangles_global, triangles_per_node
 
     def sample_edge(self, edge, timestamp) -> bool:
         current_prob = self.sample_size / timestamp
@@ -56,14 +70,13 @@ class TriestBase:
 
     def update_counters(self, operation, edge):
         (u, v) = edge
-        print("edge: ", edge)
-        print("operation: ", operation)
+        print("edge to update counters: ", edge)
         u_neighbors = self.graph.getNeighbors(u)
         v_neighbors = self.graph.getNeighbors(v)
         common_neighbors = u_neighbors & v_neighbors
         print("Common neighbours: " ,common_neighbors)
         for c in common_neighbors:
-            print("operation on : ", c)
+            print(f"operation {operation} on : ", c)
             if operation == "subtract":
                 self.global_triangles_counter -= 1
                 self.local_triangle_counters[c] -= 1
@@ -71,13 +84,22 @@ class TriestBase:
                 self.local_triangle_counters[v] -= 1
             elif operation == "add":
                 self.global_triangles_counter += 1
-                self.local_triangle_counters[c] += 1
-                self.local_triangle_counters[u] += 1
-                self.local_triangle_counters[v] += 1
+                try:
+                    self.local_triangle_counters[c] += 1
+                except:
+                    self.local_triangle_counters[c] = 1
+                try:
+                    self.local_triangle_counters[u] += 1
+                except:
+                    self.local_triangle_counters[u] = 1
+                try:
+                    self.local_triangle_counters[v] += 1
+                except:
+                    self.local_triangle_counters[v] = 1
                 
-            print(f"result on {c}: ", self.local_triangle_counters[c])
-            print(f"result on {u}: ", self.local_triangle_counters[u])
-            print(f"result on {v}: ", self.local_triangle_counters[v])
+            # print(f"result on {c}: ", self.local_triangle_counters[c])
+            # print(f"result on {u}: ", self.local_triangle_counters[u])
+            # print(f"result on {v}: ", self.local_triangle_counters[v])
 
         return None
 

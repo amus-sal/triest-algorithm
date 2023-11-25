@@ -1,6 +1,3 @@
-from time import sleep
-
-from graph2 import Vertex, Graph
 from triest_baseex import TriestBase
 import networkx as nx
 
@@ -11,13 +8,16 @@ def create_stream(graph):
     return stream
 
 if __name__ == '__main__':
+    num_nodes = 10
     graph = nx.complete_graph(10)
     graph = graph.to_undirected()
-
-    triest = TriestBase(10)
+    num_edges = len(graph.edges)
+    print("full graph num edges", len(graph.edges))
+    triest = TriestBase(num_nodes * 3)
     stream = create_stream(graph)
-    triest.calculate_triangles(stream)
-    print(triest)
-    print("networkx", nx.triangles(graph))
+    triangles_global, triangles_per_node = triest.calculate_triangles(stream)
+
+    print("triangles_global: ", triangles_global)
+    print("networkx", sum(nx.triangles(graph).values()) / 3)
 
 
