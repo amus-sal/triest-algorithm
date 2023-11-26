@@ -19,7 +19,7 @@ class TriestBase:
         for k,v in self.local_triangle_counters.items():
             triangles_per_node[k] = v * x_t
 
-        triangles_global = x_t * self.global_triangles_counter
+        triangles_global = x_t *self.global_triangles_counter
         return triangles_per_node, triangles_global
 
     def __init__(self, memory_size):
@@ -41,22 +41,21 @@ class TriestBase:
     def calculate_triangles(self, stream):
         triangles_per_node, triangles_global = 0, {}
         for edge in stream():
-            print(f"edge on stream: {edge}")
+            # print(f"edge on stream: {edge}")
             self.timestamp += 1
             if self.sample_edge(edge, self.timestamp):
                 self.update_graph(edge)
                 self.update_counters("add", edge)
-            else:
-                print("skipping")
+
             triangles_per_node, triangles_global = self.calculate_estimation()
-            print(f"timestamp: {self.timestamp}, triangles_per_node: {triangles_per_node}, triangles_global: {triangles_global}")
-            print("***************")
+           # print(f"timestamp: {self.timestamp}, triangles_per_node: {triangles_per_node}, triangles_global: {triangles_global}")
+           # print("***************")
         triangles_per_node, triangles_global = self.calculate_estimation()
         return triangles_global, triangles_per_node
 
     def sample_edge(self, edge, timestamp) -> bool:
         current_prob = self.sample_size / timestamp
-        print("timestamp: ", timestamp)
+        # print("timestamp: ", timestamp)
         if timestamp <= self.sample_size:
              return True
         elif random.random() <= current_prob:
@@ -70,13 +69,13 @@ class TriestBase:
 
     def update_counters(self, operation, edge):
         (u, v) = edge
-        print("edge to update counters: ", edge)
+        #print("edge to update counters: ", edge)
         u_neighbors = self.graph.getNeighbors(u)
         v_neighbors = self.graph.getNeighbors(v)
         common_neighbors = u_neighbors & v_neighbors
-        print("Common neighbours: " ,common_neighbors)
+        #print("Common neighbours: " ,common_neighbors)
         for c in common_neighbors:
-            print(f"operation {operation} on : ", c)
+            #print(f"operation {operation} on : ", c)
             if operation == "subtract":
                 self.global_triangles_counter -= 1
                 self.local_triangle_counters[c] -= 1
