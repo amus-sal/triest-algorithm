@@ -19,7 +19,7 @@ class TriestBase:
         for k,v in self.local_triangle_counters.items():
             triangles_per_node[k] = v * x_t
 
-        triangles_global = x_t *self.global_triangles_counter
+        triangles_global = x_t * self.global_triangles_counter
         return triangles_per_node, triangles_global
 
     def __init__(self, memory_size):
