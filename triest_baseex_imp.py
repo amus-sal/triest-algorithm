@@ -19,7 +19,7 @@ class TriestBase:
         for k,v in self.local_triangle_counters.items():
             triangles_per_node[k] = v * x_t 
 
-        triangles_global =    self.global_triangles_counter
+        triangles_global = self.global_triangles_counter
         return triangles_per_node, triangles_global
 
     def __init__(self, memory_size):
@@ -43,9 +43,10 @@ class TriestBase:
         for edge in stream():
             #print(f"edge on stream: {edge}")
             self.timestamp += 1
+            self.update_counters("add", edge)
             if self.sample_edge(edge, self.timestamp):
                 self.update_graph(edge)
-                self.update_counters("add", edge)
+
 
             triangles_per_node, triangles_global = self.calculate_estimation()
             #print(f"timestamp: {self.timestamp}, triangles_per_node: {triangles_per_node}, triangles_global: {triangles_global}")
@@ -68,31 +69,29 @@ class TriestBase:
 
     def update_counters(self, operation, edge):
         (u, v) = edge
+        if self.graph.getNeighbors(u) or self.graph.getNeighbors(v):
+            return
+
         #print("edge to update counters: ", edge)
         u_neighbors = self.graph.getNeighbors(u)
         v_neighbors = self.graph.getNeighbors(v)
         common_neighbors = u_neighbors & v_neighbors
-        #print("Common neighbours: " ,common_neighbors)
-        x_nominator = self.timestamp * (self.timestamp-1)*(self.timestamp-2)
-        x_denominator = self.sample_size * ( self.sample_size-1 ) * (self.sample_size -2)
-
-        weight = max(1, x_nominator /x_denominator)
-        #weight = max(1,((self.timestamp-1)*(self.timestamp-2))/(self.sample_size * (self.sample_size -1)))
+        weight = max(1,((self.timestamp-1)*(self.timestamp-2))/(self.sample_size * (self.sample_size -1)))
         for c in common_neighbors:
             #print(f"operation {operation} on : ", c)
             self.global_triangles_counter += weight
             try:
                 self.local_triangle_counters[c] += weight
             except:
-                self.local_triangle_counters[c] = 1
+                self.local_triangle_counters[c] = weight
             try:
                 self.local_triangle_counters[u] += weight
             except:
-                self.local_triangle_counters[u] = 1
+                self.local_triangle_counters[u] = weight
             try:
                 self.local_triangle_counters[v] += weight
             except:
-                self.local_triangle_counters[v] = 1
+                self.local_triangle_counters[v] = weight
                 
             # print(f"result on {c}: ", self.local_triangle_counters[c])
             # print(f"result on {u}: ", self.local_triangle_counters[u])
