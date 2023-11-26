@@ -76,7 +76,7 @@ class TriestBase:
         u_neighbors = self.graph.getNeighbors(u)
         v_neighbors = self.graph.getNeighbors(v)
         common_neighbors = u_neighbors & v_neighbors
-        weight = max(1,((self.timestamp-1)*(self.timestamp-2))/(self.sample_size * (self.sample_size -1)))
+        weight = max(1, ((self.timestamp-1)*(self.timestamp-2))/(self.sample_size * (self.sample_size -1)))
         for c in common_neighbors:
             #print(f"operation {operation} on : ", c)
             self.global_triangles_counter += weight

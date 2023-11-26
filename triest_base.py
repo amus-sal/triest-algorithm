@@ -70,10 +70,10 @@ class TriestBase:
         for c in common_neighbors:
             # print("operation", operation)
             if operation == "subtract":
-                self.global_triangles_counter -= 1
-                self.local_triangle_counters[c] -= 1
-                self.local_triangle_counters[u] -= 1
-                self.local_triangle_counters[v] -= 1
+                self.global_triangles_counter = max(self.global_triangles_counter - 1, 0)
+                self.local_triangle_counters[c] = max(self.local_triangle_counters[c] - 1, 0)
+                self.local_triangle_counters[u] = max(self.local_triangle_counters[u] - 1, 0)
+                self.local_triangle_counters[v] = max(self.local_triangle_counters[v] - 1, 0)
             elif operation == "add":
                 self.global_triangles_counter += 1
                 self.local_triangle_counters[c] += 1
