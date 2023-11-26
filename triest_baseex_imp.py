@@ -19,7 +19,7 @@ class TriestBase:
         for k,v in self.local_triangle_counters.items():
             triangles_per_node[k] = v * x_t 
 
-        triangles_global = x_t * self.global_triangles_counter
+        triangles_global =    self.global_triangles_counter
         return triangles_per_node, triangles_global
 
     def __init__(self, memory_size):
@@ -73,7 +73,11 @@ class TriestBase:
         v_neighbors = self.graph.getNeighbors(v)
         common_neighbors = u_neighbors & v_neighbors
         #print("Common neighbours: " ,common_neighbors)
-        weight = max(1,((self.timestamp-1)*(self.timestamp-2))/(self.sample_size * (self.sample_size -1)))
+        x_nominator = self.timestamp * (self.timestamp-1)*(self.timestamp-2)
+        x_denominator = self.sample_size * ( self.sample_size-1 ) * (self.sample_size -2)
+
+        weight = max(1, x_nominator /x_denominator)
+        #weight = max(1,((self.timestamp-1)*(self.timestamp-2))/(self.sample_size * (self.sample_size -1)))
         for c in common_neighbors:
             #print(f"operation {operation} on : ", c)
             self.global_triangles_counter += weight
